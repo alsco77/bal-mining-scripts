@@ -22,6 +22,7 @@ const BLOCKS_PER_SNAPSHOT = 256;
 (async function () {
     let userTotals = {};
     let sortedUserTotal = {};
+    let mStableTotals = {};
     let userBal = {};
 
     let balTotal = bnum(0);
@@ -44,6 +45,15 @@ const BLOCKS_PER_SNAPSHOT = 256;
                 }
             });
         }
+
+        const jsonMstable = fs.readFileSync(`./mstable.json`);
+        const mstableKeys = JSON.parse(jsonMstable);
+
+        Object.keys(mstableKeys).forEach((pool) => {
+            mStableTotals[pool] = userTotals[pool];
+        });
+
+        utils.writeData(mStableTotals, `${WEEK}/_mStabletotals`);
 
         const jsonRedirect = fs.readFileSync(`./redirect.json`);
         const redirects = JSON.parse(jsonRedirect);
@@ -71,8 +81,9 @@ const BLOCKS_PER_SNAPSHOT = 256;
             .forEach(([key, val]) => {
                 sortedUserTotal[key] = val;
             });
-        console.log(`Total BAL distributed ${balTotal.toString()}`);
         utils.writeData(sortedUserTotal, `${WEEK}/_totals`);
+
+        console.log(`Total BAL distributed ${balTotal.toString()}`);
     } catch (e) {
         console.error('Error reading reports', e);
     }
